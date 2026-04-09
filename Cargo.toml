@@ -1,0 +1,81 @@
+[package]
+name = "shibui"
+version = "0.1.0"
+edition = "2021"
+authors = ["ShibUI Team"]
+description = "A high-performance Wayland compositor with dynamic, horizontal, vertical, and center tiling layouts"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/yourusername/shibui"
+keywords = ["wayland", "compositor", "tiling", "wm", "linux", "shibui"]
+categories = ["gui", "os"]
+
+[dependencies]
+# Wayland & Compositor
+wayland-server = "0.31"
+wayland-protocols = { version = "0.32", features = ["server", "staging", "unstable"] }
+wayland-backend = "0.3"
+smithay = { version = "0.5", features = ["renderer_gl", "renderer_glow", "desktop", "wayland_frontend"] }
+
+# Rendering
+glow = "0.14"
+glutin = "0.32"
+glutin-winit = "0.5"
+raw-window-handle = "0.6"
+pixman = "0.2"
+
+# Input Handling
+input = "0.8"
+xkbcommon = "0.8"
+
+# Utilities
+log = "0.4"
+env_logger = "0.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+once_cell = "1.19"
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Async & Concurrency
+tokio = { version = "1", features = ["full"] }
+crossbeam-channel = "0.5"
+
+# Math & Geometry
+nalgebra = "0.33"
+
+# System Integration
+systemd-journal-logger = "2.1"
+nix = { version = "0.29", features = ["fs", "ioctl"] }
+
+# Optional: Vulkan rendering (for future)
+# vulkano = "0.34"
+
+[dev-dependencies]
+criterion = "0.5"
+tempfile = "3"
+
+[build-dependencies]
+pkg-config = "0.3"
+cc = "1.0"
+
+[[bin]]
+name = "flowwm"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+# Performance benchmarks
+[[bench]]
+name = "performance_tests"
+harness = false
