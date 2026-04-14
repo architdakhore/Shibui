@@ -10,10 +10,10 @@
 
 **Shibui** (渋い) is a Japanese aesthetic concept meaning "simple, subtle, and unobtrusive beauty."
 
-This Wayland compositor embodies that philosophy with **5 layout engines** combining the best features from Hyprland, niri, and MangoWM:
+This Wayland compositor embodies that philosophy with **5 layout engines** combining the best features from Hyprland, Niri, and MangoWM:
 
 - 🎯 **Dwindle** - Hyprland-style spiral tiling
-- 📜 **Horizontal** - niri-style scrolling tiling
+- 📜 **Horizontal** - Niri-style scrolling tiling
 - 📐 **Vertical** - MangoWM-style scrolling tiling
 - ⬜ **Center** - MangoWM-style centered window
 - 🎈 **Floating** - Hyprland-style free positioning
@@ -60,7 +60,7 @@ sudo cp target/release/shibui /usr/local/bin/
 ### 1. **Dwindle** (Hyprland-style)
 Spiral binary space partitioning with alternating splits.
 
-### 2. **Horizontal** (niri-style)
+### 2. **Horizontal** (Niri-style)
 Horizontal scrolling tiling with smooth animations.
 
 ### 3. **Vertical** (MangoWM-style)
@@ -106,7 +106,7 @@ count = 10
 
 ### Layout Engines (5-in-1)
 ✅ **Dwindle** - Hyprland-style spiral  
-✅ **Horizontal** - niri-style scrolling  
+✅ **Horizontal** - Niri-style scrolling  
 ✅ **Vertical** - MangoWM-style scrolling  
 ✅ **Center** - MangoWM-style centered  
 ✅ **Floating** - Hyprland-style free positioning  
@@ -202,7 +202,7 @@ MIT License - See [LICENSE](LICENSE) file
 
 Inspired by:
 - **Hyprland** - Dwindle, floating, animations
-- **niri** - Horizontal scrolling, overview
+- **Niri** - Horizontal scrolling, overview
 - **MangoWM** - Vertical scrolling, center layout
 - **Smithay** - Wayland framework
 
