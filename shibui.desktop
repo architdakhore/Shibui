@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=ShibUI
-Comment=ShibUI - Simple, Subtle Wayland Compositor
-Exec=shibui
-Type=Application
-DesktopNames=ShibUI
-X-LightDM-Session-Type=wayland
-X-GDM-Session-Name=shibui
