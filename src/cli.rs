@@ -39,7 +39,7 @@ fn main() {
 fn get_socket_path() -> PathBuf {
     let xdg_runtime = env::var("XDG_RUNTIME_DIR")
         .unwrap_or_else(|_| "/tmp".to_string());
-    PathBuf::from(xdg_runtime).join("flowwm.sock")
+    PathBuf::from(xdg_runtime).join("shibui.sock")
 }
 
 fn send_command(command: &str) -> Result<String, Box<dyn std::error::Error>> {
@@ -105,7 +105,7 @@ fn cmd_kill() {
 
 fn cmd_dispatch(args: &[String]) {
     if args.is_empty() {
-        eprintln!("Usage: flowmsg dispatch <command>");
+        eprintln!("Usage: shibuictl dispatch <command>");
         return;
     }
     

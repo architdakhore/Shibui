@@ -61,12 +61,14 @@ impl WorkspaceManager {
     
     /// Get active workspace
     pub fn active_workspace(&self) -> &Workspace {
-        self.workspaces.get(&self.active_workspace).unwrap()
+        self.workspaces.get(&self.active_workspace)
+            .expect("active workspace missing from map")
     }
     
     /// Get mutable active workspace
     pub fn active_workspace_mut(&mut self) -> &mut Workspace {
-        self.workspaces.get_mut(&self.active_workspace).unwrap()
+        self.workspaces.get_mut(&self.active_workspace)
+            .expect("active workspace missing from map")
     }
     
     /// Set active workspace

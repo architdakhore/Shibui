@@ -1,49 +1,57 @@
 //! Layout management module
 //! 
-//! Implements all tiling layouts:
-//! - Dynamic (Hyprland-style)
-//! - Horizontal (niri-style)
-//! - Vertical (MangoWM-style)
+//! Implements all layouts:
+//! - Dwindle (Hyprland-style spiral)
+//! - Horizontal (niri-style scrolling)
+//! - Vertical (MangoWM-style scrolling)
 //! - Center (MangoWM-style)
+//! - Floating (Hyprland-style)
 
 use log::{info, debug};
 use crate::config::Config;
 
-mod dynamic;
+mod dwindle;
 mod horizontal;
 mod vertical;
 mod center;
+mod floating;
 
-pub use dynamic::DynamicLayout;
+pub use dwindle::DwindleLayout;
+pub use dwindle::DwindleLayout;
 pub use horizontal::HorizontalLayout;
 pub use vertical::VerticalLayout;
 pub use center::CenterLayout;
+pub use floating::FloatingLayout;
 
 /// Layout manager handles switching between different layout modes
 pub struct LayoutManager {
     /// Current layout mode
     current_mode: LayoutMode,
-    /// Dynamic layout engine
-    dynamic: DynamicLayout,
-    /// Horizontal layout engine
+    /// Dwindle layout engine (Hyprland-style spiral)
+    dwindle: DwindleLayout,
+    /// Horizontal layout engine (niri-style scrolling)
     horizontal: HorizontalLayout,
-    /// Vertical layout engine
+    /// Vertical layout engine (MangoWM-style scrolling)
     vertical: VerticalLayout,
-    /// Center layout engine
+    /// Center layout engine (MangoWM-style)
     center: CenterLayout,
+    /// Floating layout engine (Hyprland-style)
+    floating: FloatingLayout,
 }
 
 /// Available layout modes
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LayoutMode {
-    /// Hyprland-style dynamic tiling
-    Dynamic,
+    /// Hyprland-style dwindle spiral tiling
+    Dwindle,
     /// niri-style horizontal tiling
     Horizontal,
     /// MangoWM-style vertical tiling
     Vertical,
     /// MangoWM-style center layout
     Center,
+    /// Hyprland-style floating
+    Floating,
 }
 
 /// Window geometry
@@ -68,19 +76,21 @@ impl LayoutManager {
         info!("📐 Initializing layout manager...");
         
         let mode = match config.layout_mode.as_str() {
-            "dynamic" => LayoutMode::Dynamic,
+            "dwindle" => LayoutMode::Dwindle,
             "horizontal" => LayoutMode::Horizontal,
             "vertical" => LayoutMode::Vertical,
             "center" => LayoutMode::Center,
-            _ => LayoutMode::Dynamic,
+            "floating" => LayoutMode::Floating,
+            _ => LayoutMode::Dwindle,
         };
         
         Self {
             current_mode: mode,
-            dynamic: DynamicLayout::new(config),
+            dwindle: DwindleLayout::new(config),
             horizontal: HorizontalLayout::new(config),
             vertical: VerticalLayout::new(config),
             center: CenterLayout::new(config),
+            floating: FloatingLayout::new(config),
         }
     }
     
@@ -98,10 +108,11 @@ impl LayoutManager {
     /// Cycle to next layout mode
     pub fn cycle_mode(&mut self) {
         let next_mode = match self.current_mode {
-            LayoutMode::Dynamic => LayoutMode::Horizontal,
+            LayoutMode::Dwindle => LayoutMode::Horizontal,
             LayoutMode::Horizontal => LayoutMode::Vertical,
             LayoutMode::Vertical => LayoutMode::Center,
-            LayoutMode::Center => LayoutMode::Dynamic,
+            LayoutMode::Center => LayoutMode::Floating,
+            LayoutMode::Floating => LayoutMode::Dwindle,
         };
         self.set_mode(next_mode);
     }
@@ -109,10 +120,14 @@ impl LayoutManager {
     /// Calculate window positions for all windows in workspace
     pub fn calculate_layout(&self, workspace_geometry: WindowGeometry, window_count: usize) -> Vec<LayoutInfo> {
         match self.current_mode {
-            LayoutMode::Dynamic => self.dynamic.calculate(workspace_geometry, window_count),
+            LayoutMode::Dwindle => self.dwindle.calculate(workspace_geometry, window_count),
             LayoutMode::Horizontal => self.horizontal.calculate(workspace_geometry, window_count),
             LayoutMode::Vertical => self.vertical.calculate(workspace_geometry, window_count),
             LayoutMode::Center => self.center.calculate(workspace_geometry, window_count),
+            LayoutMode::Floating => {
+                // For floating, return stored geometries
+                self.floating.calculate(workspace_geometry, window_count)
+            }
         }
     }
     
@@ -123,14 +138,62 @@ impl LayoutManager {
     }
     
     /// Add a new window to the layout
-    pub fn add_window(&mut self, window_id: usize) {
+    pub fn add_window(&mut self, window_id: usize, workspace_geo: Option<WindowGeometry>) {
         debug!("Adding window {} to layout", window_id);
-        // Window will be positioned on next layout calculation
+        
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.add_window(window_id, workspace_geo);
+        }
+        // Other layouts compute positions automatically
     }
     
     /// Remove a window from the layout
     pub fn remove_window(&mut self, window_id: usize) {
         debug!("Removing window {} from layout", window_id);
-        // Layout will be recalculated
+        
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.remove_window(window_id);
+        }
+        // Other layouts will recalculate
+    }
+    
+    /// Handle floating window drag start
+    pub fn start_drag(&mut self, window_id: usize, mouse_x: i32, mouse_y: i32) {
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.start_drag(window_id, mouse_x, mouse_y);
+        }
+    }
+    
+    /// Handle floating window drag update
+    pub fn update_drag(&mut self, mouse_x: i32, mouse_y: i32, bounds: WindowGeometry) {
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.update_drag(mouse_x, mouse_y, bounds);
+        }
+    }
+    
+    /// Handle floating window drag end
+    pub fn end_drag(&mut self) {
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.end_drag();
+        }
+    }
+    
+    /// Handle floating window resize
+    pub fn start_resize(&mut self, window_id: usize) {
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.start_resize(window_id);
+        }
+    }
+    
+    pub fn update_resize(&mut self, width_delta: i32, height_delta: i32, min_w: i32, min_h: i32) {
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.update_resize(width_delta, height_delta, min_w, min_h);
+        }
+    }
+    
+    pub fn end_resize(&mut self) {
+        if self.current_mode == LayoutMode::Floating {
+            self.floating.end_resize();
+        }
     }
 }

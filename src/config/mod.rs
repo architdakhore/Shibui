@@ -8,6 +8,9 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+pub mod reloader;
+pub use reloader::ConfigReloader;
+
 /// Main configuration structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -258,19 +261,74 @@ impl Default for RenderConfig {
 }
 
 impl Config {
-    /// Load configuration from file
+    /// Load and validate configuration from file
     pub fn load() -> Result<Self, Box<dyn std::error::Error>> {
         let config_path = Self::get_config_path();
+        info!("📖 Loading configuration from {:?}", config_path);
         
-        if config_path.exists() {
-            info!("📄 Loading config from {:?}", config_path);
-            let content = fs::read_to_string(&config_path)?;
-            let config: Config = toml::from_str(&content)?;
-            Ok(config)
-        } else {
-            info!("📄 Config file not found, using defaults");
-            Ok(Config::default())
+        if !config_path.exists() {
+            info!("📝 Config file not found, creating default");
+            let config = Self::default();
+            config.save()?;
+            return Ok(config);
         }
+        
+        Self::load_from_path(&config_path)
+    }
+    
+    /// Load configuration from specific path
+    pub fn load_from_path(path: &Path) -> Result<Self, Box<dyn std::error::Error>> {
+        debug!("📖 Loading config from: {:?}", path);
+        
+        let content = fs::read_to_string(path)?;
+        let mut config: Self = toml::from_str(&content)?;
+        
+        // Validate and apply defaults
+        config.validate()?;
+        
+        info!("✅ Configuration loaded successfully");
+        Ok(config)
+    }
+    
+    /// Validate configuration and apply defaults
+    pub fn validate(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        // Validate general settings
+        if self.general.name.is_empty() {
+            self.general.name = "Shibui".to_string();
+        }
+        
+        // Validate tiling settings
+        if self.tiling.gap_size.is_none() {
+            self.tiling.gap_size = Some(5);
+        }
+        if self.tiling.border_width.is_none() {
+            self.tiling.border_width = Some(2);
+        }
+        if self.tiling.master_ratio.is_none() {
+            self.tiling.master_ratio = Some(0.6);
+        }
+        if self.tiling.center_ratio.is_none() {
+            self.tiling.center_ratio = Some(0.5);
+        }
+        if self.tiling.window_width.is_none() {
+            self.tiling.window_width = Some(1280);
+        }
+        if self.tiling.window_height.is_none() {
+            self.tiling.window_height = Some(720);
+        }
+        
+        // Validate workspace settings
+        if self.workspaces.count.is_none() {
+            self.workspaces.count = Some(10);
+        }
+        
+        // Validate animation settings
+        if self.animations.duration_ms == 0 {
+            self.animations.duration_ms = 250;
+        }
+        
+        info!("✅ Configuration validated with defaults applied");
+        Ok(())
     }
     
     /// Save configuration to file
@@ -291,7 +349,7 @@ impl Config {
     /// Get configuration file path
     fn get_config_path() -> PathBuf {
         // Check environment variable first
-        if let Ok(path) = std::env::var("FLOWWM_CONFIG") {
+        if let Ok(path) = std::env::var("SHIBUI_CONFIG") {
             return PathBuf::from(path);
         }
         
@@ -299,11 +357,11 @@ impl Config {
         if let Ok(home) = std::env::var("HOME") {
             let xdg_config = std::env::var("XDG_CONFIG_HOME")
                 .unwrap_or_else(|_| format!("{}/.config", home));
-            return PathBuf::from(xdg_config).join("flowwm/config.toml");
+            return PathBuf::from(xdg_config).join("shibui/config.toml");
         }
         
         // Fallback
-        PathBuf::from("./flowwm.toml")
+        PathBuf::from("./shibui.toml")
     }
 }
 

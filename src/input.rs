@@ -111,17 +111,32 @@ impl InputHandler {
         Ok(())
     }
     
-    /// Handle keyboard event
-    pub fn handle_key(&mut self, key: u32, state: KeyState) {
+    /// Handle keyboard event with XKB-based modifier detection
+    /// 
+    /// IMPORTANT: For production use, integrate with xkbcommon::xkb::State
+    /// Use xkb_state.mod_name_is_active() with standard modifier names:
+    /// - xkb::MOD_NAME_SHIFT, xkb::MOD_NAME_CTRL, xkb::MOD_NAME_ALT, xkb::MOD_NAME_LOGO
+    /// This ensures compatibility with different keyboard layouts and remappings.
+    pub fn handle_key(&mut self, key: u32, state: KeyState, xkb_state: Option<&xkbcommon::xkb::State>) {
         match state {
             KeyState::Pressed => {
-                // Check for modifier keys
-                match key {
-                    42 | 54 => self.modifiers.shift = true,  // Shift
-                    29 | 97 => self.modifiers.ctrl = true,   // Ctrl
-                    56 | 100 => self.modifiers.alt = true,   // Alt
-                    125 => self.modifiers.logo = true,        // Super
-                    _ => {}
+                // Use XKB state if available for proper modifier detection
+                if let Some(state) = xkb_state {
+                    // Proper XKB-based modifier detection
+                    self.modifiers.shift = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_SHIFT);
+                    self.modifiers.ctrl = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_CTRL);
+                    self.modifiers.alt = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_ALT);
+                    self.modifiers.logo = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_LOGO);
+                } else {
+                    // Fallback: hardcoded keycodes (NOT recommended for production)
+                    // These may break on non-standard keyboards or remapped layouts
+                    match key {
+                        42 | 54 => self.modifiers.shift = true,  // Left/Right Shift
+                        29 | 97 => self.modifiers.ctrl = true,   // Left/Right Control
+                        56 => self.modifiers.alt = true,          // Left Alt
+                        125 => self.modifiers.logo = true,        // Left Super/Logo
+                        _ => {}
+                    }
                 }
                 
                 // Add to pressed keys
@@ -132,13 +147,21 @@ impl InputHandler {
                 }
             }
             KeyState::Released => {
-                // Update modifier state
-                match key {
-                    42 | 54 => self.modifiers.shift = false,
-                    29 | 97 => self.modifiers.ctrl = false,
-                    56 | 100 => self.modifiers.alt = false,
-                    125 => self.modifiers.logo = false,
-                    _ => {}
+                // Update modifiers on key release
+                if let Some(state) = xkb_state {
+                    self.modifiers.shift = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_SHIFT);
+                    self.modifiers.ctrl = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_CTRL);
+                    self.modifiers.alt = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_ALT);
+                    self.modifiers.logo = state.mod_name_is_active(xkbcommon::xkb::MOD_NAME_LOGO);
+                } else {
+                    // Fallback for hardcoded keycodes
+                    match key {
+                        42 | 54 => self.modifiers.shift = false,
+                        29 | 97 => self.modifiers.ctrl = false,
+                        56 => self.modifiers.alt = false,
+                        125 => self.modifiers.logo = false,
+                        _ => {}
+                    }
                 }
                 
                 // Remove from pressed keys
@@ -149,11 +172,23 @@ impl InputHandler {
         }
     }
     
-    /// Handle pointer motion
-    pub fn handle_motion(&mut self, dx: f64, dy: f64) {
+    /// Handle pointer motion with bounds checking
+    /// 
+    /// Parameters:
+    /// - dx, dy: Delta movement from input device
+    /// - bounds: Optional screen bounds (width, height) to clamp pointer position
+    pub fn handle_motion(&mut self, dx: f64, dy: f64, bounds: Option<(u32, u32)>) {
         for pointer in self.pointers.values_mut() {
+            // Apply delta
             pointer.x += dx;
             pointer.y += dy;
+            
+            // Clamp to output bounds if provided
+            // This prevents negative or out-of-bounds cursor coordinates
+            if let Some((width, height)) = bounds {
+                pointer.x = pointer.x.max(0.0).min(width as f64);
+                pointer.y = pointer.y.max(0.0).min(height as f64);
+            }
         }
     }
     

@@ -1,4 +1,4 @@
-//! ShibUI - A High-Performance Wayland Compositor
+/// Shibui - A High-Performance Wayland Compositor
 //! 
 //! Features:
 //! - Dynamic tiling (Hyprland-style)
@@ -14,6 +14,14 @@
 
 #![warn(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions, clippy::similar_names)]
+
+use anyhow::Result;
+use log::{info, error, warn};
+use std::env;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use nix::sys::signal::{signal, SigHandler, Signal};
+use nix::libc;
 
 mod compositor;
 mod input;
@@ -32,15 +40,19 @@ mod ipc;
 mod profiler;
 mod cli;
 
-use anyhow::Result;
-use log::{info, error};
-use std::env;
+/// Global shutdown flag
+static SHUTDOWN_FLAG: AtomicBool = AtomicBool::new(false);
 
-/// ShibUI version
+/// Shibui version
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Compositor name
-const COMPOSITOR_NAME: &str = "ShibUI";
+const COMPOSITOR_NAME: &str = "Shibui";
+
+/// Signal handler for graceful shutdown
+extern "C" fn handle_signal(_: libc::c_int) {
+    SHUTDOWN_FLAG.store(true, Ordering::Relaxed);
+}
 
 fn main() -> Result<()> {
     // Initialize logging
@@ -63,11 +75,27 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
+    // Setup signal handlers for graceful shutdown
+    unsafe {
+        signal(Signal::SIGTERM, SigHandler::Handler(handle_signal))
+            .map_err(|e| anyhow::anyhow!("Failed to handle SIGTERM: {}", e))?;
+        signal(Signal::SIGINT, SigHandler::Handler(handle_signal))
+            .map_err(|e| anyhow::anyhow!("Failed to handle SIGINT: {}", e))?;
+    }
+
     // Initialize and run the compositor
     match compositor::Compositor::new() {
         Ok(mut compositor) => {
             info!("✅ Compositor initialized successfully");
-            compositor.run()?;
+            match compositor.run() {
+                Ok(()) => {
+                    info!("👋 {} shutting down gracefully", COMPOSITOR_NAME);
+                }
+                Err(e) => {
+                    error!("❌ Compositor error: {}", e);
+                    return Err(e);
+                }
+            }
         }
         Err(e) => {
             error!("❌ Failed to initialize compositor: {}", e);
@@ -75,7 +103,7 @@ fn main() -> Result<()> {
         }
     }
 
-    info!("👋 {} shutting down", COMPOSITOR_NAME);
+    info!("👋 {} shutdown complete", COMPOSITOR_NAME);
     Ok(())
 }
 
@@ -84,18 +112,19 @@ fn print_help() {
 🌊 {} v{} - A High-Performance Wayland Compositor
 
 USAGE:
-    flowwm [OPTIONS]
+    shibui [OPTIONS]
 
 OPTIONS:
-    -h, --help       Print this help message
-    -V, --version    Print version information
-    --config <PATH>  Use custom configuration file
-    --debug          Enable debug logging
-    --no-animations  Disable animations
+    -h, --help         Print this help message
+    -V, --version      Print version information
+    --config <PATH>    Use custom configuration file
+    --backend <TYPE>   Use backend (drm, winit, headless)
+    --debug            Enable debug logging
+    --no-animations    Disable animations
 
 LAYOUT MODES:
     dynamic      Hyprland-style dynamic tiling
-    horizontal   niri-style horizontal tiling
+    horizontal   niri-style horizontal tiling  
     vertical     MangoWM-style vertical tiling
     center       MangoWM-style center layout
 
@@ -107,7 +136,11 @@ KEYBINDINGS (Default):
     SUPER+Shift+Q    Close window
     SUPER+1-9        Switch workspaces
 
-For more information, see the documentation at:
-https://github.com/yourusername/flowwm
+SIGNALS:
+    SIGTERM, SIGINT  Graceful shutdown
+
+FOR MORE INFORMATION:
+    https://github.com/yourusername/shibui
+    man shibui(1)    If installed
 "#, COMPOSITOR_NAME, VERSION);
 }

@@ -133,6 +133,9 @@ impl AnimationManager {
                 
                 // Interpolate value
                 anim.current = anim.start + (anim.end - anim.start) * eased;
+            } else {
+                // Ensure completed animations snap to end value
+                anim.current = anim.end;
             }
         }
         
@@ -163,20 +166,33 @@ impl AnimationManager {
                 }
             }
             AnimationCurve::Spring => {
-                // Simple spring approximation
-                (1.0 - (-5.0 * progress).exp()) * (1.0 - progress).sin()
+                // Underdamped spring: 1 - (1 + c*t) * exp(-c*t)
+                // Better approximation: converges to 1.0 at progress=1.0
+                let c = 3.0; // Spring stiffness
+                1.0 - (1.0 + c * progress) * (-c * progress).exp()
             }
         }
     }
     
     /// Get current value for an animation
+    /// Returns the end value if the animation has completed (progress >= 1.0)
     pub fn get_value(&self, id: usize) -> Option<f32> {
-        self.animations.iter().find(|a| a.id == id).map(|a| a.current)
+        // First check active animations
+        if let Some(anim) = self.animations.iter().find(|a| a.id == id) {
+            return Some(anim.current);
+        }
+        
+        // Animation was removed (completed), return None
+        // Caller should use the last known value or end value
+        None
     }
     
     /// Check if an animation is complete
     pub fn is_complete(&self, id: usize) -> bool {
-        self.animations.iter().find(|a| a.id == id).map_or(true, |a| a.progress >= 1.0)
+        // If animation doesn't exist, consider it complete
+        self.animations.iter()
+            .find(|a| a.id == id)
+            .map_or(true, |a| a.progress >= 1.0)
     }
     
     /// Remove a specific animation

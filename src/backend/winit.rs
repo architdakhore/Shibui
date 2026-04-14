@@ -3,8 +3,8 @@
 //! Windowed backend using winit for testing and development.
 //! Allows running the compositor in a window on another Wayland/X11 session.
 
-use log::{info, debug};
-use anyhow::{Result, Context};
+use log::info;
+use anyhow::Result;
 use std::time::{Duration, Instant};
 
 use super::Backend;

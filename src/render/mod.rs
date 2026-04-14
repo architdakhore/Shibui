@@ -5,8 +5,10 @@
 use log::{info, debug};
 
 mod gles;
+mod error_overlay;
 
 pub use gles::GlesRenderer;
+pub use error_overlay::ErrorOverlay;
 
 /// Main renderer trait
 pub trait Renderer {

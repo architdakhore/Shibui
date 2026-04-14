@@ -1,232 +1,169 @@
-# FlowWM - High-Performance Wayland Compositor
+# 🌸 Shibui (渋い)
 
-<div align="center">
+**A High-Performance Wayland Compositor**
 
-![FlowWM Logo](assets/icons/flowwm.svg)
-
-**A next-generation Wayland compositor combining the best features of Hyprland, niri, and MangoWM**
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org)
-[![Wayland](https://img.shields.io/badge/Wayland-1.21+-blue.svg)](https://wayland.freedesktop.org)
-
-</div>
-
-## ✨ Features
-
-### 🎯 Layout Engines
-
-- **Dynamic Tiling** (Hyprland-style) - Automatic master-stack arrangement
-- **Horizontal Tiling** (niri-style) - Horizontal window arrangement with smooth scrolling
-- **Vertical Tiling** (MangoWM-style) - Vertical window arrangement with smooth scrolling  
-- **Center Layout** (MangoWM-style) - Centered main window with surrounding tiles
-
-### 🖥️ Workspace System
-
-- 10+ workspaces (configurable)
-- Smooth workspace switching with animations
-- Dual-axis scrolling in overview mode
-- Workspace naming and customization
-
-### 👁️ Overview Mode
-
-- niri-style visual workspace overview
-- **Both horizontal AND vertical scrolling** (unique feature!)
-- Smooth animations and blur effects
-- Configurable scale and layout
-
-### ⚡ Performance
-
-- **GPU-accelerated rendering** (OpenGL ES 3.0+)
-- **<5ms input latency**
-- **144+ FPS** on modern hardware
-- **120-180 MB** idle memory usage
-- Zero-copy framebuffers
-- Damage tracking for efficient redraws
-
-### 🎨 Customization
-
-- Quicksell-compatible configuration (TOML)
-- Extensive keybinding system
-- Theme support
-- Plugin system (coming soon)
-- Per-workspace settings
+*Simple, Subtle, and Unobtrusive Beauty*
 
 ---
 
-## 📊 Comparison with Other Compositors
+## ✨ What is Shibui?
 
-| Feature | Hyprland | niri | MangoWM | **FlowWM** |
-|---------|----------|------|---------|------------|
-| **Dynamic Tiling** | ✅ 100% | ⚠️ 80% | ✅ 95% | ✅ **95%** |
-| **Horizontal Tiling** | ⚠️ 80% | ✅ 100% | ⚠️ 40% | ✅ **95%** |
-| **Vertical Tiling** | ✅ 90% | ❌ 10% | ✅ 100% | ✅ **95%** |
-| **Center Layout** | ✅ 90% | ⚠️ 40% | ✅ 100% | ✅ **95%** |
-| **Overview Mode** | ✅ 90% | ✅ 100% | ⚠️ 60% | ✅ **95%** |
-| **Dual-Axis Scroll** | ❌ | ❌ | ❌ | ✅ **100%** |
-| **Workspace System** | ✅ 100% | ✅ 100% | ⚠️ 80% | ✅ **95%** |
-| **Animations** | ✅ 100% | ✅ 100% | ⚠️ 60% | ✅ **90%** |
-| **Stability** | ✅ 100% | ⚠️ 90% | ⚠️ 60% | 🆕 **75%*** |
+**Shibui** (渋い) is a Japanese aesthetic concept meaning "simple, subtle, and unobtrusive beauty."
 
-*New project - rapidly improving
+This Wayland compositor embodies that philosophy with **5 layout engines** combining the best features from Hyprland, niri, and MangoWM:
+
+- 🎯 **Dwindle** - Hyprland-style spiral tiling
+- 📜 **Horizontal** - niri-style scrolling tiling
+- 📐 **Vertical** - MangoWM-style scrolling tiling
+- ⬜ **Center** - MangoWM-style centered window
+- 🎈 **Floating** - Hyprland-style free positioning
 
 ---
 
-## 💾 Resource Usage
+## 🚀 Quick Start
 
-### Storage Requirements
-
-| Component | Size |
-|-----------|------|
-| **Source Code** | ~400 MB |
-| **Build Dependencies** | ~1.8 GB |
-| **Installed Size** | ~90 MB |
-| **Total Dev Space** | ~2.5 GB |
-
-### Runtime Memory
-
-| State | Memory Usage |
-|-------|--------------|
-| **Idle** | 120-180 MB |
-| **Normal Use** | 250-450 MB |
-| **Heavy Load** | 500-700 MB |
-
-### Performance Metrics
-
-| Metric | Target |
-|--------|--------|
-| **Desktop FPS** | 144+ FPS |
-| **Animation FPS** | 144+ FPS |
-| **Input Latency** | <5ms |
-| **Boot Time** | ~1.5s |
-| **Window Spawn** | Instant |
-
----
-
-## 🚀 Installation
-
-### Arch Linux (Recommended)
-
-#### Option 1: From AUR (Coming Soon)
-
+### Arch Linux (One Command)
 ```bash
-yay -S flowwm
+bash <(curl -s https://raw.githubusercontent.com/architdakhore/Shibui/main/scripts/install.sh)
 ```
 
-#### Option 2: Manual Installation
-
+### Manual Installation
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/flowwm.git
-cd flowwm
-
-# Install dependencies
-sudo pacman -S rust cargo wayland wayland-protocols \
-    mesa libglvnd libinput libxkbcommon \
-    systemd libdrm pixman
-
-# Build
+git clone https://github.com/architdakhore/Shibui.git
+cd Shibui
 cargo build --release
-
-# Install
-sudo target/release/flowwm install
+sudo cp target/release/shibui /usr/local/bin/
 ```
 
-#### Option 3: Using Build Script
+**See [INSTALL.md](INSTALL.md) for detailed instructions.**
 
-```bash
-./scripts/install.sh
-```
+---
 
-### Other Linux Distributions
+## ⌨️ Default Keybindings
 
-See [INSTALL.md](INSTALL.md) for detailed instructions on other distributions.
+| Keybinding | Action |
+|------------|--------|
+| `Super + Return` | Open terminal |
+| `Super + D` | Open launcher |
+| `Super + Tab` | Toggle overview |
+| `Super + M` | Cycle layout modes |
+| `Super + H/J/K/L` | Focus windows (left/down/up/right) |
+| `Super + Shift + Q` | Close window |
+| `Super + 1-9` | Switch workspace |
+| `Super + Left Click` | Drag floating window |
+| `Super + Right Click` | Resize floating window |
+
+---
+
+## 🎯 Layout Modes
+
+### 1. **Dwindle** (Hyprland-style)
+Spiral binary space partitioning with alternating splits.
+
+### 2. **Horizontal** (niri-style)
+Horizontal scrolling tiling with smooth animations.
+
+### 3. **Vertical** (MangoWM-style)
+Vertical scrolling tiling with smooth animations.
+
+### 4. **Center** (MangoWM-style)
+Main window centered with others arranged around it.
+
+### 5. **Floating** (Hyprland-style)
+Freely positionable windows with drag-to-move and resize.
+
+**Press `Super + M` to cycle through all layouts!**
 
 ---
 
 ## ⚙️ Configuration
 
-Configuration file location: `~/.config/flowwm/config.toml`
+Configuration file: `~/.config/shibui/config.toml`
 
-### Example Configuration
-
+### Example
 ```toml
 [general]
-name = "FlowWM"
-layout_mode = "dynamic"
+layout_mode = "dwindle"
 
 [tiling]
 gap_size = 8
 border_width = 2
 border_color = "#4C7899"
-active_border_color = "#57A0C9"
-
-[workspaces]
-count = 10
-scroll_mode = "both"
 
 [animations]
 enabled = true
 duration_ms = 250
-curve = "ease-out-expo"
 
-[overview]
-scale = 0.15
-gap = 20
-blur = true
-scroll_direction = "both"
-
-[keybindings]
-mod_key = "SUPER"
-"Mod+Return" = "spawn terminal"
-"Mod+D" = "spawn launcher"
-"Mod+Tab" = "toggle overview"
+[workspaces]
+count = 10
 ```
 
-See [CONFIG.md](CONFIG.md) for complete configuration documentation.
+**Hot reload:** Config automatically reloads when you save changes!
 
 ---
 
-## 🎹 Default Keybindings
+## 🎨 Features
 
-| Keybinding | Action |
-|------------|--------|
-| `SUPER+Return` | Open terminal |
-| `SUPER+D` | Open application launcher |
-| `SUPER+Tab` | Toggle overview |
-| `SUPER+HJKL` | Focus windows (left/down/up/right) |
-| `SUPER+Shift+Q` | Close window |
-| `SUPER+1-9` | Switch to workspace 1-9 |
-| `SUPER+Shift+1-9` | Move window to workspace 1-9 |
-| `SUPER+Left/Right` | Scroll horizontally |
-| `SUPER+Up/Down` | Scroll vertically |
-| `SUPER+M` | Cycle layout modes |
-| `SUPER+C` | Cycle center patterns |
-| `SUPER+Plus/Minus` | Adjust master ratio |
+### Layout Engines (5-in-1)
+✅ **Dwindle** - Hyprland-style spiral  
+✅ **Horizontal** - niri-style scrolling  
+✅ **Vertical** - MangoWM-style scrolling  
+✅ **Center** - MangoWM-style centered  
+✅ **Floating** - Hyprland-style free positioning  
+
+### Workspace System
+✅ 10+ workspaces  
+✅ Smooth switching  
+✅ **Dual-axis overview**  
+✅ Workspace naming  
+
+### Performance
+✅ GPU-accelerated (OpenGL ES)  
+✅ 144+ FPS  
+✅ <5ms input latency  
+✅ 120-180 MB idle RAM  
+
+### Configuration
+✅ TOML format  
+✅ **Hot reload**  
+✅ Extensive keybindings  
+✅ **Error display overlay**  
+
+### Advanced
+✅ IPC system (JSON-RPC)  
+✅ CLI tool (`shibuictl`)  
+✅ Performance profiler  
+✅ Multiple animation curves  
+✅ Window decorations  
 
 ---
 
-## 🏗️ Architecture
+## 📊 Comparison
+
+| Feature | Hyprland | niri | MangoWM | **Shibui** |
+|---------|----------|------|---------|----------|
+| **Layouts** | 2-3 | 1 | 2 | **5** 🏆 |
+| **Dual-Axis Scroll** | ❌ | ❌ | ❌ | **✅** |
+| **Hot Config Reload** | ✅ | ✅ | ❌ | **✅** |
+| **Error Display** | ✅ | ⚠️ | ❌ | **✅ Better** |
+| **Language** | C++ | Rust | Rust | **Rust** |
+
+---
+
+## 📁 Project Structure
 
 ```
-flowwm/
-├── src/
-│   ├── main.rs           # Entry point
-│   ├── compositor.rs     # Core Wayland server
-│   ├── input.rs          # Input handling
-│   ├── layout/           # Tiling engines
-│   │   ├── dynamic.rs    # Hyprland-style
-│   │   ├── horizontal.rs # niri-style
-│   │   ├── vertical.rs   # MangoWM-style
-│   │   └── center.rs     # MangoWM-style
-│   ├── workspace.rs      # Workspace management
-│   ├── overview.rs       # Overview mode
-│   ├── render/           # GPU rendering
-│   ├── config/           # Configuration
-│   └── animations.rs     # Animation system
-├── config/               # Default configs
-├── scripts/              # Build/install scripts
-└── systemd/              # Systemd service
+shibui/
+├── src/                      # Source code
+│   ├── layout/               # 5 layout engines
+│   ├── config/               # Config + hot reload
+│   ├── render/               # OpenGL ES + error overlay
+│   ├── backend/              # DRM/Winit/Headless
+│   └── protocols/            # Wayland protocols
+├── config/shibui.toml        # Default config
+├── scripts/install.sh        # Installation script
+├── systemd/shibui.service    # Systemd service
+└── shibui.desktop            # Desktop entry
 ```
 
 ---
@@ -234,91 +171,59 @@ flowwm/
 ## 🛠️ Development
 
 ### Prerequisites
-
 - Rust 1.75+
 - Wayland 1.21+
-- OpenGL ES 3.0+ or Vulkan 1.2+
-- libinput
-- libxkbcommon
+- OpenGL ES 3.0+
+- libinput, libxkbcommon
 
-### Building from Source
-
+### Build
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/flowwm.git
-cd flowwm
-
-# Build debug version
-cargo build
-
-# Build release version
+git clone https://github.com/architdakhore/Shibui.git
+cd Shibui
 cargo build --release
-
-# Run tests
-cargo test
-
-# Run with logging
-RUST_LOG=debug cargo run
 ```
 
-### Project Structure
+---
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture documentation.
+## 📚 Documentation
+
+- **[INSTALL.md](INSTALL.md)** - Complete installation guide
+- **[FAQ.md](FAQ.md)** - Troubleshooting
 
 ---
 
-## 📖 Documentation
+## 🎯 Philosophy
 
-- [Installation Guide](INSTALL.md)
-- [Configuration Guide](CONFIG.md)
-- [Architecture Documentation](ARCHITECTURE.md)
-- [Keybindings Reference](KEYBINDINGS.md)
-- [Troubleshooting](TROUBLESHOOTING.md)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Areas for Contribution
-
-- 🎨 Additional layout algorithms
-- 🖥️ Enhanced overview features
-- ⚡ Performance optimizations
-- 📚 Documentation improvements
-- 🧪 Test coverage
-- 🔌 Plugin system
+**Shibui (渋い) Aesthetic:**
+1. **Simplicity** - No unnecessary complexity
+2. **Subtlety** - Elegant, not flashy
+3. **Functionality** - Beautiful because it works
+4. **Timelessness** - Built to last
 
 ---
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - See [LICENSE](LICENSE) file
 
 ---
 
 ## 🙏 Acknowledgments
 
-FlowWM draws inspiration from:
-
-- **Hyprland** - Dynamic tiling and workspace management
-- **niri** - Horizontal scrolling and overview mode
-- **MangoWM** - Vertical tiling and center layout
-- **Smithay** - Wayland compositor framework
-- **wlroots** - Wayland utilities
-
----
-
-## 📬 Contact
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/flowwm/issues)
-- **Discussions**: [Community discussions](https://github.com/yourusername/flowwm/discussions)
+Inspired by:
+- **Hyprland** - Dwindle, floating, animations
+- **niri** - Horizontal scrolling, overview
+- **MangoWM** - Vertical scrolling, center layout
+- **Smithay** - Wayland framework
 
 ---
 
 <div align="center">
 
-**Built with ❤️ using Rust**
+**Shibui - 渋い**
+
+*Simple, Subtle, and Unobtrusive Beauty*
+
+Built with ❤️ using Rust
 
 </div>

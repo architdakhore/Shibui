@@ -21,6 +21,23 @@ pub enum WindowState {
     Minimized,
 }
 
+/// Parse hex color string to RGB array
+fn parse_color(hex: &str) -> [f32; 3] {
+    // Remove '#' if present
+    let cleaned = hex.trim_start_matches('#');
+    
+    if cleaned.len() != 6 {
+        // Default to blue if invalid
+        return [0.298, 0.477, 0.614];
+    }
+    
+    let r = u8::from_str_radix(&cleaned[0..2], 16).unwrap_or(76) as f32 / 255.0;
+    let g = u8::from_str_radix(&cleaned[2..4], 16).unwrap_or(120) as f32 / 255.0;
+    let b = u8::from_str_radix(&cleaned[4..6], 16).unwrap_or(153) as f32 / 255.0;
+    
+    [r, g, b]
+}
+
 /// Window information
 pub struct Window {
     /// Window ID
@@ -39,8 +56,8 @@ pub struct Window {
     pub urgent: bool,
     /// Workspace ID
     pub workspace_id: i32,
-    /// Border color
-    pub border_color: String,
+    /// Border color (pre-parsed RGB array for efficient rendering)
+    pub border_color: [f32; 3],
     /// Border width
     pub border_width: i32,
 }
@@ -62,7 +79,7 @@ impl Window {
             focused: false,
             urgent: false,
             workspace_id,
-            border_color: "#4C7899".to_string(),
+            border_color: parse_color("#4C7899"),  // Parse once at construction
             border_width: 2,
         }
     }
@@ -127,10 +144,23 @@ impl Window {
         debug!("Window {} toggled floating", self.id);
     }
     
-    /// Close window
-    pub fn close(&self) {
-        debug!("Closing window {}", self.id);
-        // TODO: Send close request to window
+    /// Request window closure
+    /// 
+    /// # Returns
+    /// The window ID that should be closed. The caller (WindowManager or XdgWmHandler)
+    /// must send the actual close request to the Wayland surface.
+    /// 
+    /// # Design Notes
+    /// - This method only returns the ID; the actual close is handled by the protocol layer
+    /// - The XdgWmHandler will send a `close()` event to the Wayland client
+    /// - The client may choose to ignore the request (though well-behaved clients will close)
+    /// 
+    /// # TODO
+    /// Integrate with Smithay's `desktop::Window` type to unify logical and surface state.
+    /// This would allow direct access to the Wayland surface for sending close requests.
+    pub fn request_close(&self) -> WindowId {
+        debug!("🚪 Close requested for window {}", self.id);
+        self.id
     }
 }
 

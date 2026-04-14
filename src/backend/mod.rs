@@ -5,8 +5,8 @@
 //! - Winit (windowed for testing)
 //! - Headless (no display, for testing)
 
-use log::{info, debug, error};
-use anyhow::{Result, Context};
+use log::info;
+use anyhow::Result;
 
 pub mod drm;
 pub mod winit;

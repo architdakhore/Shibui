@@ -2,7 +2,7 @@
 //! 
 //! Backend without display output, used for testing and automated testing.
 
-use log::{info, debug};
+use log::info;
 use anyhow::Result;
 use std::time::{Duration, Instant};
 

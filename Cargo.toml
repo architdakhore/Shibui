@@ -2,13 +2,21 @@
 name = "shibui"
 version = "0.1.0"
 edition = "2021"
-authors = ["ShibUI Team"]
-description = "A high-performance Wayland compositor with dynamic, horizontal, vertical, and center tiling layouts"
+authors = ["Shibui Team"]
+description = "Shibui (渋い) - A high-performance Wayland compositor with 4-in-1 layout engines"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/yourusername/shibui"
-keywords = ["wayland", "compositor", "tiling", "wm", "linux", "shibui"]
+repository = "https://github.com/architdakhore/Shibui"
+keywords = ["wayland", "compositor", "tiling", "wm", "linux", "shibui", "shibui-wm"]
 categories = ["gui", "os"]
+
+# Feature flags
+[features]
+default = ["renderer_gles"]
+renderer_gles = ["glow", "glutin", "glutin-winit"]
+profiling = []
+debug-logs = []
+vulkan = []  # Future Vulkan support
 
 [dependencies]
 # Wayland & Compositor
@@ -34,16 +42,18 @@ env_logger = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "0.8"
-once_cell = "1.19"
 thiserror = "2.0"
 anyhow = "1.0"
 
-# Async & Concurrency
-tokio = { version = "1", features = ["full"] }
+# File Watching (for hot config reload)
+notify = "7.0"
+
+# Event Loop & Async
+calloop = "0.13"
 crossbeam-channel = "0.5"
 
-# Math & Geometry
-nalgebra = "0.33"
+# Device Management
+udev = "0.8"
 
 # System Integration
 systemd-journal-logger = "2.1"
@@ -61,7 +71,7 @@ pkg-config = "0.3"
 cc = "1.0"
 
 [[bin]]
-name = "flowwm"
+name = "shibui"
 path = "src/main.rs"
 
 [profile.release]

@@ -2,10 +2,15 @@
 //! 
 //! Direct hardware rendering using DRM (Direct Rendering Manager) and KMS (Kernel Mode Setting).
 //! This is the production backend for running on real hardware.
+//! 
+//! Note: For production use, consider integrating udev for device discovery and hotplug support.
 
-use log::{info, debug, error};
+use log::{info, debug, warn};
 use anyhow::{Result, Context};
 use std::path::Path;
+use std::os::unix::io::OwnedFd;
+use std::fs::File;
+use std::os::unix::io::FromRawFd;
 
 use super::Backend;
 
@@ -13,8 +18,8 @@ use super::Backend;
 pub struct DrmBackend {
     /// DRM device path
     device_path: String,
-    /// DRM file descriptor
-    drm_fd: Option<i32>,
+    /// DRM file descriptor (owned - proper lifetime management)
+    drm_fd: Option<OwnedFd>,
     /// KMS connector
     connector_id: u32,
     /// CRTC (display controller)
@@ -46,26 +51,32 @@ impl DrmBackend {
     
     /// Find DRM device
     fn find_drm_device() -> Result<String> {
-        // Try common DRM device paths
+        // Try common DRM device paths (card devices only - no render nodes)
+        // Render nodes (renderD*) don't support KMS modesetting operations
         let paths = [
             "/dev/dri/card0",
             "/dev/dri/card1",
-            "/dev/dri/renderD128",
         ];
         
         for path in &paths {
             if Path::new(path).exists() {
+                info!("✅ Found DRM device: {}", path);
                 return Ok(path.to_string());
             }
         }
         
-        Err(anyhow::anyhow!("No DRM device found"))
+        // TODO: Integrate udev for dynamic device discovery
+        // Use smithay::backend::udev or udev crate to enumerate DRM devices
+        // This enables hotplug support and dual-GPU laptop handling
+        
+        warn!("⚠️  No DRM device found in standard paths");
+        warn!("   Consider using udev for device discovery");
+        Err(anyhow::anyhow!("No DRM device found - ensure you have proper GPU drivers loaded"))
     }
     
-    /// Open DRM device
+    /// Open DRM device with proper file descriptor lifetime management
     fn open_device(&mut self) -> Result<()> {
-        use std::fs::File;
-        use std::os::unix::io::AsRawFd;
+        info!("🔓 Opening DRM device: {}", self.device_path);
         
         let file = File::options()
             .read(true)
@@ -73,8 +84,13 @@ impl DrmBackend {
             .open(&self.device_path)
             .context("Failed to open DRM device")?;
         
-        self.drm_fd = Some(file.as_raw_fd());
-        debug!("DRM device opened");
+        // Convert to OwnedFd for proper lifetime management
+        // This prevents the fd from being invalidated when File is dropped
+        let owned_fd = unsafe { OwnedFd::from_raw_fd(file.into()) };
+        self.drm_fd = Some(owned_fd);
+        
+        info!("✅ DRM device opened successfully");
+        debug!("DRM fd: {:?}", self.drm_fd);
         
         Ok(())
     }
